@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- FORM VIEW -->
+    <record id="" model="ir.ui.view">
+
+    </record>
+
+</odoo>
