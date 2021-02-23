@@ -71,7 +71,7 @@ OUT__auth_deletetokens__SUCCESS_CODE = 200          # editable
 # HTTP controller of REST resources:
 
 class ControllerREST(http.Controller):
-    
+
     def define_token_expires_in(self, token_type, jdata):
         token_lifetime = jdata.get('%s_lifetime' % token_type)
         try:
@@ -83,11 +83,11 @@ class ControllerREST(http.Controller):
         else:
             try:
                 expires_in = float(request.env['ir.config_parameter'].sudo()
-                    .get_param('rest_api.%s_token_expires_in' % token_type))
+                                   .get_param('rest_api.%s_token_expires_in' % token_type))
             except:
                 expires_in = None
         return int(round(expires_in or (sys.maxsize - time.time())))
-    
+
     # Login in Odoo database and get access tokens:
     @http.route('/api/auth/get_tokens', methods=['GET', 'POST'], type='http', auth='none', csrf=False)
     def api_auth_gettokens(self, **kw):
@@ -101,17 +101,17 @@ class ControllerREST(http.Controller):
         # Merge all parameters with body priority
         jdata = args.copy()
         jdata.update(body)
-        
+
         username = jdata.get('username')
         password = jdata.get('password')
-        
+
         # Empty 'username' or 'password:
         if not username or not password:
             error_descrip = "Empty value of 'username' or 'password'!"
             error = 'empty_username_or_password'
             _logger.error(error_descrip)
             return error_response(400, error, error_descrip)
-        
+
         # Login in Odoo database:
         try:
             request.session.authenticate(db_name, username, password)
@@ -119,16 +119,16 @@ class ControllerREST(http.Controller):
             # In Odoo v12 was changed the Odoo authentication exception,
             # therefore the 'invalid_database' error response was removed!
             pass
-        
+
         uid = request.session.uid
-        
+
         # Odoo login failed:
         if not uid:
             error_descrip = "Odoo User authentication failed!"
             error = 'odoo_user_authentication_failed'
             _logger.error(error_descrip)
             return error_response(401, error, error_descrip)
-        
+
         # Generate tokens
         access_token = generate_token()
         expires_in = self.define_token_expires_in('access', jdata)
@@ -137,29 +137,29 @@ class ControllerREST(http.Controller):
         # prevent undeletable access token
         if refresh_expires_in < expires_in:
             refresh_expires_in = expires_in
-        
+
         # Save all tokens in store
         _logger.info("Save OAuth2 tokens of user in Token Store...")
         token_store.save_all_tokens(
             request.env,
-            access_token = access_token,
-            expires_in = expires_in,
-            refresh_token = refresh_token,
-            refresh_expires_in = refresh_expires_in,
-            user_id = uid)
-        
+            access_token=access_token,
+            expires_in=expires_in,
+            refresh_token=refresh_token,
+            refresh_expires_in=refresh_expires_in,
+            user_id=uid)
+
         user_context = request.session.get_context() if uid else {}
         company_id = request.env.user.company_id.id if uid else 'null'
         # Logout from Odoo and close current 'login' session:
         request.session.logout()
-        
+
         # Successful response:
         return werkzeug.wrappers.Response(
-            status = OUT__auth_gettokens__SUCCESS_CODE,
-            content_type = 'application/json; charset=utf-8',
-            headers = [ ('Cache-Control', 'no-store'),
-                        ('Pragma', 'no-cache')  ],
-            response = json.dumps({
+            status=OUT__auth_gettokens__SUCCESS_CODE,
+            content_type='application/json; charset=utf-8',
+            headers=[('Cache-Control', 'no-store'),
+                     ('Pragma', 'no-cache')],
+            response=json.dumps({
                 'uid':                  uid,
                 'user_context':         user_context,
                 'company_id':           company_id,
@@ -168,7 +168,7 @@ class ControllerREST(http.Controller):
                 'refresh_token':        refresh_token,
                 'refresh_expires_in':   refresh_expires_in, }),
         )
-    
+
     # Refresh access token:
     @http.route('/api/auth/refresh_token', methods=['POST'], type='http', auth='none', csrf=False)
     def api_auth_refreshtoken(self, **kw):
@@ -182,7 +182,7 @@ class ControllerREST(http.Controller):
         # Merge all parameters with body priority
         jdata = args.copy()
         jdata.update(body)
-        
+
         # Get and check refresh token
         refresh_token = jdata.get('refresh_token')
         if not refresh_token:
@@ -190,38 +190,39 @@ class ControllerREST(http.Controller):
             error = 'no_refresh_token'
             _logger.error(error_descrip)
             return error_response(400, error, error_descrip)
-        
+
         # Validate refresh token
-        refresh_token_data = token_store.fetch_by_refresh_token(request.env, refresh_token)
+        refresh_token_data = token_store.fetch_by_refresh_token(
+            request.env, refresh_token)
         if not refresh_token_data:
             return error_response_401__invalid_token()
-        
+
         old_access_token = refresh_token_data['access_token']
         new_access_token = generate_token()
         expires_in = self.define_token_expires_in('access', jdata)
         uid = refresh_token_data['user_id']
-        
+
         # Update access (and refresh) token in store
         token_store.update_access_token(
             request.env,
-            old_access_token = old_access_token,
-            new_access_token = new_access_token,
-            expires_in = expires_in,
-            refresh_token = refresh_token,
-            user_id = uid)
-        
+            old_access_token=old_access_token,
+            new_access_token=new_access_token,
+            expires_in=expires_in,
+            refresh_token=refresh_token,
+            user_id=uid)
+
         # Successful response:
         return werkzeug.wrappers.Response(
-            status = OUT__auth_refreshtoken__SUCCESS_CODE,
-            content_type = 'application/json; charset=utf-8',
-            headers = [ ('Cache-Control', 'no-store'),
-                        ('Pragma', 'no-cache')  ],
-            response = json.dumps({
+            status=OUT__auth_refreshtoken__SUCCESS_CODE,
+            content_type='application/json; charset=utf-8',
+            headers=[('Cache-Control', 'no-store'),
+                     ('Pragma', 'no-cache')],
+            response=json.dumps({
                 'access_token': new_access_token,
                 'expires_in':   expires_in,
             }),
         )
-    
+
     # Delete access tokens from token store:
     @http.route('/api/auth/delete_tokens', methods=['POST'], type='http', auth='none', csrf=False)
     def api_auth_deletetokens(self, **kw):
@@ -235,7 +236,7 @@ class ControllerREST(http.Controller):
         # Merge all parameters with body priority
         jdata = args.copy()
         jdata.update(body)
-        
+
         # Get and check refresh token
         refresh_token = jdata.get('refresh_token')
         if not refresh_token:
@@ -243,9 +244,10 @@ class ControllerREST(http.Controller):
             error = 'no_refresh_token'
             _logger.error(error_descrip)
             return error_response(400, error, error_descrip)
-        
-        token_store.delete_all_tokens_by_refresh_token(request.env, refresh_token)
-        
+
+        token_store.delete_all_tokens_by_refresh_token(
+            request.env, refresh_token)
+
         # Successful response:
         return successful_response(
             OUT__auth_deletetokens__SUCCESS_CODE,

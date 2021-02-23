@@ -1,17 +1,17 @@
 #!/usr/bin/python3
-
-import requests, json
+import requests
+import json
 
 
 print('\n 1. Login in Odoo and get access tokens:')
 r = requests.post(
     'http://localhost:8069/api/auth/get_tokens',
-    headers = {'Content-Type': 'text/html; charset=utf-8'},
-    data = json.dumps({
+    headers={'Content-Type': 'text/html; charset=utf-8'},
+    data=json.dumps({
         'username': 'admin',
         'password': 'admin',
     }),
-    #verify = False      # for TLS/SSL connection
+    # verify = False      # for TLS/SSL connection
 )
 print(r.text)
 access_token = r.json()['access_token']
@@ -20,31 +20,31 @@ access_token = r.json()['access_token']
 print('\n 2. sale.order - Update one:')
 r = requests.put(
     'http://localhost:8069/api/sale.order/3',  # fill SO 'id' here
-    headers = {
+    headers={
         'Content-Type': 'text/html; charset=utf-8',
         'Access-Token': access_token
     },
-    data = json.dumps({
+    data=json.dumps({
         # simple field (non relational)
         'note': 'TAXES UPDATE TEST !!!',
-        
+
         # one2many field
         'order_line': [
             {
                 'id': 7,  # fill LINE 'id' here
-                
+
                 # Database data description:
                 # "Tax 15.00%"  is 'account.tax' ID: 1
                 # "Tax 5%"      is 'account.tax' ID: 3
-                
+
                 # For more than one level of nesting you should use the
                 # special Odoo syntax, something like this:
-                
+
                 # many2many field
                 'tax_id': [
-                    (6,0, [1, 3])  # ["Tax 15.00%", "Tax 5%"]
+                    (6, 0, [1, 3])  # ["Tax 15.00%", "Tax 5%"]
                 ],
-                
+
                 # Here are more DETAILS on creating/updating x2many fields:
                 #   https://www.odoo.com/documentation/12.0/reference/orm.html#odoo.models.Model.write
                 #   https://www.odoo.com/forum/help-1/question/how-to-insert-value-to-a-one2many-field-in-table-with-create-method-28714
@@ -53,6 +53,6 @@ r = requests.put(
             },
         ],
     }),
-    #verify = False      # for TLS/SSL connection
+    # verify = False      # for TLS/SSL connection
 )
 print(r.text)
