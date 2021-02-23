@@ -1,17 +1,17 @@
 #!/usr/bin/python3
-
-import requests, json
+import requests
+import json
 
 
 print('\n 1. Login in Odoo and get access tokens:')
 r = requests.post(
     'http://localhost:8069/api/auth/get_tokens',
-    headers = {'Content-Type': 'text/html; charset=utf-8'},
-    data = json.dumps({
+    headers={'Content-Type': 'text/html; charset=utf-8'},
+    data=json.dumps({
         'username': 'admin',
         'password': 'admin',
     }),
-    #verify = False      # for TLS/SSL connection
+    # verify = False      # for TLS/SSL connection
 )
 print(r.text)
 access_token = r.json()['access_token']
@@ -20,11 +20,11 @@ access_token = r.json()['access_token']
 print('\n 2. res.partner - Update one:')
 r = requests.put(
     'http://localhost:8069/api/res.partner/41',  # fill 'id' here!
-    headers = {
+    headers={
         'Content-Type': 'text/html; charset=utf-8',
         'Access-Token': access_token
     },
-    data = json.dumps({
+    data=json.dumps({
         # simple fields (non relational):
         'name':         'TEST Name~~',
         'street':       'TEST Street~~',
@@ -57,6 +57,6 @@ r = requests.put(
             {'id': 4},
         ],
     }),
-    #verify = False      # for TLS/SSL connection
+    # verify = False      # for TLS/SSL connection
 )
 print(r.text)

@@ -30,12 +30,12 @@ OUT__report__call_method__SUCCESS_CODE = 200        # editable
 # HTTP controller of REST resources:
 
 class ControllerREST(http.Controller):
-    
+
     # Call method (with parameters):
     @http.route('/api/report/<method>', methods=['GET', 'PUT'], type='http', auth='none', csrf=False)
     @check_permissions
     def api__report__method_PUT(self, method, **kw):
         return wrap__report__call_method(
-            method = method,
-            success_code = OUT__report__call_method__SUCCESS_CODE
+            method=method,
+            success_code=OUT__report__call_method__SUCCESS_CODE
         )

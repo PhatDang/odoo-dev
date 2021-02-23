@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    
+
     <record id="view_model_tree_inherit" model="ir.ui.view">
         <field name="model">ir.model</field>
         <field name="inherit_id" ref="base.view_model_tree"/>
@@ -11,7 +11,7 @@
             </field>
         </field>
     </record>
-    
+
     <record id="view_model_form_inherit" model="ir.ui.view">
         <field name="model">ir.model</field>
         <field name="inherit_id" ref="base.view_model_form"/>
@@ -34,5 +34,5 @@
             </xpath>
         </field>
     </record>
-    
+
 </odoo>
