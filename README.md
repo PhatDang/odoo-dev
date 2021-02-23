@@ -1,2 +1,2 @@
-# odoo13-dev
-Demo Odoo 13
+# DEMO Odoo 13.0
+Author: Dang Minh Phat ( PhatDM)
